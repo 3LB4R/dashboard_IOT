@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Packet Pro - Live Stream</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #0284c7;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .hdr {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .hdr-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 28px;
+            background: var(--surface);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .hdr h1 {
+            font-weight: 800;
+            font-size: 24px;
+            color: var(--accent);
+        }
+
+        .hdr p {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .live-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 12px;
+            border: 1px solid var(--success);
+        }
+
+        .theme-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--accent);
+        }
+
+        .card.safe::before {
+            background: var(--success);
+        }
+
+        .card.danger {
+            background: rgba(239, 68, 68, 0.05);
+            border-color: var(--danger);
+        }
+
+        .card.danger::before {
+            background: var(--danger);
+        }
+
+        .card.danger .val {
+            color: var(--danger);
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .lbl {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .val {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1;
+        }
+
+        .safe .val {
+            color: var(--success);
+        }
+
+        .mini-badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mini-badge span {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .c-ok {
+            color: var(--success);
+        }
+
+        .c-err {
+            color: var(--danger);
+        }
+
+        .c-warn {
+            color: var(--warning);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #fff !important;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* TERMINAL BOX (SERIAL MONITOR REPLICA) */
+        .terminal {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #0f0;
+            height: 250px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .terminal p {
+            margin-bottom: 5px;
+        }
+
+        .term-err {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .term-info {
+            color: #00ffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hdr">
+        <div class="hdr-left">
+            <div class="logo">🚀</div>
+            <div>
+                <h1>Blynk Fast-Stream Web</h1>
+                <p id="ts">Sync Rate: 1 Request / Detik</p>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="theme-btn" onclick="toggleTheme()">☀️ Mode Terang</button>
+            <div class="live-badge" id="conn-badge">● 1000ms TICK</div>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="card safe" id="c-status">
+            <div class="lbl">V1: Status Bahaya</div>
+            <div class="val" id="v-status">AMAN</div>
+        </div>
+        <div class="card">
+            <div class="lbl">V2: G-Force Peak (Bantingan)</div>
+            <div class="val" id="v-guncang">0.00 <span style="font-size:18px; color:var(--text-muted)">m/s²</span></div>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="mini-badge">
+            <div class="lbl">V5: Status Memori SD</div><span id="s-sd" class="c-err">Menyinkronkan...</span>
+        </div>
+        <div class="mini-badge">
+            <div class="lbl">V6: Status GPS</div><span id="s-gps" class="c-warn">Menyinkronkan...</span>
+        </div>
+    </div>
+
+    <div class="card" style="border-left-color: var(--warning);">
+        <div class="lbl">V3 & V4: Koordinat Peta Live</div>
+        <div class="val" style="font-size:22px; color: var(--text-main);" id="v-gps">Menunggu Satelit...</div>
+        <a href="#" target="_blank" class="btn disabled" id="btn-maps">🗺 Buka Alamat Google Maps</a>
+    </div>
+
+    <div class="terminal" id="terminal-box">
+        <p class="term-info">========================================</p>
+        <p class="term-info"> 🚀 VIRTUAL SERIAL MONITOR STARTED</p>
+        <p class="term-info">========================================</p>
+    </div>
+
+    <script>
+        const TOKEN = "TOPzcviPbFncWHMMG6zv-jOW3fhTSMN_";
+        let lastGuncangan = -1;
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        }
+
+        function cetakTerminal(guncang) {
+            const term = document.getElementById('terminal-box');
+            const p1 = document.createElement('p');
+            p1.className = 'term-err';
+            p1.innerHTML = `<br>========================================<br> 🚨 PERINGATAN: PAKET TERBANTING! 🚨<br> ⚠️ Kekuatan G-Force : ${guncang} m/s2<br>========================================<br> ➜ [BLYNK] ✅ Data sukses ditarik ke Web!`;
+            term.appendChild(p1);
+            term.scrollTop = term.scrollHeight; // Auto-scroll ke bawah
+        }
+
+        async function updateSistemRealtime() {
+            try {
+                // Tembak sekaligus untuk meminimalkan delay (Blynk memperbolehkan batch GET 1 detik sekali)
+                const res = await fetch(`https://blynk.cloud/external/api/get?token=${TOKEN}&v1&v2&v3&v4&v5&v6&_t=${Date.now()}`);
+                const data = await res.json();
+
+                const bahaya = parseInt(data.v1) || 0;
+                const guncang = parseFloat(data.v2) || 0.0;
+                const lat = parseFloat(data.v3) || 0.0;
+                const lng = parseFloat(data.v4) || 0.0;
+                const sd = parseInt(data.v5) || 0;
+                const gps = parseInt(data.v6) || 0;
+
+                // Cek Perubahan Guncangan untuk di-print ke Terminal Virtual
+                if (bahaya === 1 && guncang !== lastGuncangan && guncang > 5.0) {
+                    cetakTerminal(guncang.toFixed(2));
+                    lastGuncangan = guncang;
+                } else if (bahaya === 0) {
+                    lastGuncangan = 0; // Reset saat aman
+                }
+
+                // 1. Status Bahaya
+                const cStatus = document.getElementById('c-status');
+                const vStatus = document.getElementById('v-status');
+                if (bahaya === 1) { cStatus.className = 'card danger'; vStatus.textContent = '🚨 TERBANTING!'; }
+                else { cStatus.className = 'card safe'; vStatus.textContent = 'AMAN'; }
+
+                // 2. Guncangan MPU
+                document.getElementById('v-guncang').innerHTML = guncang.toFixed(2) + ' <span style="font-size:18px; color:var(--text-muted)">m/s²</span>';
+
+                // 3 & 4. Status SD Card & GPS
+                const elSd = document.getElementById('s-sd');
+                elSd.textContent = sd === 1 ? '1 - MOUNTED OK' : '0 - CARD FAIL / REMOVED';
+                elSd.className = sd === 1 ? 'c-ok' : 'c-err';
+
+                const elGps = document.getElementById('s-gps');
+                elGps.textContent = gps === 1 ? '1 - LOCKED OK' : '0 - SEARCHING SATELIT';
+                elGps.className = gps === 1 ? 'c-ok' : 'c-warn';
+
+                // 5. Koordinat Peta
+                const vGps = document.getElementById('v-gps');
+                const btnMaps = document.getElementById('btn-maps');
+                if (gps === 1 && lat !== 0 && lng !== 0) {
+                    vGps.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+                    btnMaps.href = `https://www.google.com/maps?q=${lat},${lng}`;
+                    btnMaps.classList.remove('disabled');
+                } else {
+                    vGps.textContent = "Sinyal Satelit Belum Terkunci (Bawa Keluar Ruangan!)";
+                    btnMaps.classList.add('disabled');
+                }
+            } catch (error) {
+                // Jangan ngapa-ngapain kalau gagal fetch, lanjut detik berikutnya aja
+            }
+        }
+
+        // Tembak server secara ngebut: 1 Detik Sekali!
+        setInterval(updateSistemRealtime, 1000);
+        updateSistemRealtime();
+    </script>
+</body>
+
+</html>
