@@ -96,7 +96,6 @@
 
         .live-badge {
             background: rgba(245, 158, 11, 0.15);
-            /* Transparan amber */
             color: var(--warning);
             padding: 6px 14px;
             border-radius: 20px;
@@ -252,7 +251,6 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
             color: #f59e0b;
-            /* Warna Terminal Firebase */
             height: 250px;
             overflow-y: auto;
             margin-top: 20px;
@@ -317,7 +315,7 @@
     <div class="terminal" id="terminal-box">
         <p class="term-info">========================================</p>
         <p class="term-info"> 🚀 VIRTUAL SERIAL MONITOR STARTED</p>
-        <p class="term-info"> ➜ [SYSTEM] Firebase Listener Aktif</p>
+        <p class="term-info"> ➜ [SYSTEM] Menghubungkan ke smartpacket-a21f9...</p>
         <p class="term-info">========================================</p>
     </div>
 
@@ -325,20 +323,19 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 🔥 GANTI URL DATABASE INI DENGAN MILIKMU 🔥
+        // 🔥 URL FIREBASE SUDAH DIREVISI KE MILIK THORIQ ASLI 🔥
         const firebaseConfig = {
-            databaseURL: "https://smartpackettracker-default-rtdb.firebaseio.com"
+            databaseURL: "https://smartpacket-a21f9-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Target endpoint yang ditembak oleh C++ ESP32 (data_paket.json)
+        // Target endpoint JSON yang ditembak oleh SIM800L
         const dataRef = ref(db, 'data_paket');
 
         let lastGuncang = -1;
 
-        // Ekspos fungsi toggleTheme agar bisa dipanggil dari tombol HTML
         window.toggleTheme = function () {
             const html = document.documentElement;
             html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
@@ -350,18 +347,24 @@
             p1.className = 'term-err';
             p1.innerHTML = `<br>========================================<br> 🚨 PERINGATAN: PAKET TERBANTING! 🚨<br> ⚠️ Kekuatan G-Force : ${guncang} m/s2<br>========================================<br> ➜ [FIREBASE] ✅ Data sinkronisasi instan!`;
             term.appendChild(p1);
-            term.scrollTop = term.scrollHeight; // Auto-scroll
+            term.scrollTop = term.scrollHeight; // Auto-scroll ke bawah
         }
 
         // 🔥 FUNGSI WEBSOCKET LISTENER (ON-VALUE) 🔥
-        // Akan tereksekusi OTOMATIS jika ada perubahan data di Cloud, tidak pakai delay/interval!
+        // Akan tereksekusi OTOMATIS jika ada data masuk dari ESP32
         onValue(dataRef, (snapshot) => {
             const data = snapshot.val();
-            if (!data) return; // Abaikan jika Firebase masih kosong
 
+            // Jika database kosong, jangan lakukan apa-apa
+            if (!data) return;
+
+            // Update timestamp agar kelihatan webnya hidup
             document.getElementById('ts').textContent = 'Sinkronisasi Cloud: ' + new Date().toLocaleTimeString('id-ID');
+            document.getElementById('conn-badge').textContent = '● CONNECTED';
+            document.getElementById('conn-badge').style.color = '#10b981';
+            document.getElementById('conn-badge').style.borderColor = '#10b981';
 
-            // Ambil data dari JSON Firebase
+            // Tarik data JSON
             const bahaya = data.bahaya || 0;
             const guncang = data.guncang || 0.0;
             const lat = data.lat || 0.0;
@@ -374,10 +377,10 @@
                 cetakTerminal(guncang.toFixed(2));
                 lastGuncang = guncang;
             } else if (bahaya === 0) {
-                lastGuncang = 0; // Reset saat status paket aman
+                lastGuncang = 0; // Reset saat aman
             }
 
-            // 1. Status Bahaya
+            // 1. Update UI Card Status Bahaya
             const cStatus = document.getElementById('c-status');
             const vStatus = document.getElementById('v-status');
             if (bahaya === 1) {
@@ -388,19 +391,20 @@
                 vStatus.textContent = 'AMAN';
             }
 
-            // 2. Guncangan MPU
+            // 2. Update Angka Guncangan (Otomatis melompat ke angka aslinya, misal 5.06)
             document.getElementById('v-guncang').innerHTML = guncang.toFixed(2) + ' <span style="font-size:18px; color:var(--text-muted)">m/s²</span>';
 
-            // 3 & 4. Status SD Card & GPS
+            // 3. Update Status SD Card (Langsung nyala hijau kalau di database isinya 1)
             const elSd = document.getElementById('s-sd');
             elSd.textContent = sd === 1 ? '1 - MOUNTED OK' : '0 - CARD FAIL / REMOVED';
             elSd.className = sd === 1 ? 'c-ok' : 'c-err';
 
+            // 4. Update Status GPS 
             const elGps = document.getElementById('s-gps');
             elGps.textContent = gps === 1 ? '1 - LOCKED OK' : '0 - SEARCHING SATELIT';
             elGps.className = gps === 1 ? 'c-ok' : 'c-warn';
 
-            // 5. Koordinat Peta
+            // 5. Update Koordinat Peta
             const vGps = document.getElementById('v-gps');
             const btnMaps = document.getElementById('btn-maps');
             if (gps === 1 && lat !== 0 && lng !== 0) {
